@@ -3,6 +3,13 @@ import requests
 import json
 import jsonpath
 import random
+import datetime
+
+def validate(date_text):
+    try:
+        datetime.datetime.strptime(date_text, '%Y-%m-%d')
+    except ValueError:
+        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 def test_GetBookingIds():
     ##GIVEN - webservice url in order to GET
@@ -40,11 +47,38 @@ def test_GetBooking():
     pos=random.randrange(0,len(json_resp))
     id=json_resp[pos]['bookingid']
     urlid=url+"/"+str(id)
-    ##WHEN - GET Booking
+    ##WHEN - GET Booking using existing ID
     respo = requests.get(urlid)
     json_respo = respo.json()
     ##THEN - Response has correct code
     assert respo.status_code==200, "Wrong response code."
+    ##THEN - Response all booking details with expected names
+    assert list(json_respo.keys())[0]=="firstname", "Data key 'firstname' does not exists"
+    assert list(json_respo.keys())[1]=="lastname", "Data key 'lastname' does not exists"
+    assert list(json_respo.keys())[2]=="totalprice", "Data key 'totalprice' does not exists"
+    assert list(json_respo.keys())[3]=="depositpaid", "Data key 'depositpaid' does not exists"
+    assert list(json_respo.keys())[4]=="bookingdates", "Data key 'bookingdates' does not exists"
+    assert list(json_respo['bookingdates'].keys())[0]=="checkin", "Data key 'checkin' does not exists"
+    assert list(json_respo['bookingdates'].keys())[1]=="checkout", "Data key 'checkout' does not exists"
+    assert list(json_respo.keys())[5]=="additionalneeds", "Data key 'additionalneeds' does not exists"
+    ##THEN - Response all booking details with expected types
+    assert isinstance((json_respo['firstname']), str) , "'firstname' is not a string - unexpected type"
+    assert isinstance((json_respo['lastname']), str) , "'lastname' is not a string - unexpected type"
+    assert isinstance((json_respo['totalprice']), (int, float)) , "'totalprice' is not a intiger nor float - unexpected type"
+    assert isinstance((json_respo['depositpaid']), bool) , "'depositpaid' is not a bool - unexpected type"
+    assert isinstance((json_respo['bookingdates']), dict) , "'bookingdates' is not a dictionary - unexpected type"
+    checkin=json_respo['bookingdates']['checkin']
+    validate(checkin)
+    assert isinstance(datetime.datetime.strptime(checkin, '%Y-%m-%d'), datetime.date) , "'checkin' is not a date- unexpected type"
+    checkout=json_respo['bookingdates']['checkout']
+    validate(checkout)
+    assert isinstance(datetime.datetime.strptime(checkout, '%Y-%m-%d'), datetime.date) , "'checkin' is not a date- unexpected type"
+    assert isinstance((json_respo['additionalneeds']), str) , "'additionalneeds' is not a string - unexpected type"
+    ##WHEN - GET Booking using unexisting ID
+
+
+
+
 
 
 
@@ -55,19 +89,4 @@ url="https://restful-booker.herokuapp.com/booking"
 resp = requests.get(url)
 json_resp = resp.json()
 id=json_resp[0]['bookingid']
-print(len(json_resp))
-urlid=url+'/'+str(id)
-pos=random.randrange(0,len(json_resp))
-print(pos)
-id=json_resp[pos]['bookingid']
 print(id)
-
-
-
-
-
-
-
-
-
-
