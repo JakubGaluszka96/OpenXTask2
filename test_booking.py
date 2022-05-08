@@ -23,7 +23,13 @@ def test_GetBookingIds():
         assert "bookingid" == list(json_resp[i].keys())[0] , "Data key does not exists"
         assert isinstance((json_resp[i]['bookingid']), int) , "At least one of booking Id's is not an intiger"
 
-
+def find_maxID(dict):
+    max=dict[0]['bookingid']
+    for i in range(1,len(dict)):
+        newmax=dict[i]['bookingid']
+        if newmax>max:
+            max=newmax
+    return max
 
 def test_GetBooking():
     ##GIVEN - webservice url in order to GET Booking IDs
@@ -75,11 +81,11 @@ def test_GetBooking():
     assert isinstance(datetime.datetime.strptime(checkout, '%Y-%m-%d'), datetime.date) , "'checkin' is not a date- unexpected type"
     assert isinstance((json_respo['additionalneeds']), str) , "'additionalneeds' is not a string - unexpected type"
     ##WHEN - GET Booking using unexisting ID
-
-
-
-
-
+    maxID=find_maxID(json_resp)
+    id=maxID+1
+    urlid=url+"/"+str(id)
+    respo = requests.get(urlid)
+    assert respo.status_code==404, "Wrong response for unexisting ID"
 
 
 
@@ -90,3 +96,8 @@ resp = requests.get(url)
 json_resp = resp.json()
 id=json_resp[0]['bookingid']
 print(id)
+
+        
+
+
+
