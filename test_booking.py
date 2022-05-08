@@ -5,19 +5,17 @@ import jsonpath
 
 def test_GetBookingIds(url="https://restful-booker.herokuapp.com/booking"):
     #url="https://restful-booker.herokuapp.com/booking"
-    answer = requests.get(url)
-    json_answer = json.loads(answer.text)
-    bookingid = jsonpath.jsonpath(json_answer,'bookingid')
-    assert 200<=answer.status_code<300
+    resp = requests.get(url)
+    json_resp = json.loads(resp.text)
+    bookingid = jsonpath.jsonpath(json_resp,'bookingid')
+    assert resp.status_code==200
 
 
 url="https://restful-booker.herokuapp.com/booking"
-answer = requests.get(url)
-json_answer = answer.json()
-bookingid = jsonpath.jsonpath(json_answer,'bookingid')
-#print(answer.text)
-#print(answer.content)
-print(bookingid)
+resp = requests.get(url)
+json_resp = resp.json()
+bookingid = jsonpath.jsonpath(json_resp,'bookingid')
+print(json_resp)
 
 
 
