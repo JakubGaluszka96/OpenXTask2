@@ -1,7 +1,4 @@
-import pytest
 import requests
-import json
-import jsonpath
 import random
 import datetime
 
@@ -10,6 +7,14 @@ def validate(date_text):
         datetime.datetime.strptime(date_text, '%Y-%m-%d')
     except ValueError:
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
+
+def find_maxID(dict):
+    max=dict[0]['bookingid']
+    for i in range(1,len(dict)):
+        newmax=dict[i]['bookingid']
+        if newmax>max:
+            max=newmax
+    return max
 
 def test_GetBookingIds():
     ##GIVEN - webservice url in order to GET
@@ -22,14 +27,6 @@ def test_GetBookingIds():
     for i in range(0,len(json_resp)):
         assert "bookingid" == list(json_resp[i].keys())[0] , "Data key does not exists"
         assert isinstance((json_resp[i]['bookingid']), int) , "At least one of booking Id's is not an intiger"
-
-def find_maxID(dict):
-    max=dict[0]['bookingid']
-    for i in range(1,len(dict)):
-        newmax=dict[i]['bookingid']
-        if newmax>max:
-            max=newmax
-    return max
 
 def test_GetBooking():
     ##GIVEN - webservice url in order to GET Booking IDs
@@ -88,16 +85,6 @@ def test_GetBooking():
     assert respo.status_code==404, "Wrong response for unexisting ID"
 
 
-
-
-
-url="https://restful-booker.herokuapp.com/booking"
-resp = requests.get(url)
-json_resp = resp.json()
-id=json_resp[0]['bookingid']
-print(id)
-
-        
 
 
 
