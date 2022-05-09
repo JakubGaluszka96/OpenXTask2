@@ -17,26 +17,34 @@ def find_maxID(dict):
     return max
 
 def test_Auth_correct_cred():
+    ##GIVEN - webservice url, data with correct creditials, correct header
     url="https://restful-booker.herokuapp.com/auth"
     data={
     "username" : "admin",
     "password" : "password123"
     }
     head='Content-Type: application/json'
+    ##WHEN - correct request is posted
     resp=requests.post(url, data, head)
+    ##THEN - response code must be correct
     assert resp.status_code==200, "Incorrect response code."
-    assert list(resp.json().keys())[0]=="token"
-    assert isinstance(resp.json()["token"], str)
+    ##THEN Response must contain data in correct format
+    assert list(resp.json().keys())[0]=="token", "response data has no key 'token'"
+    assert isinstance(resp.json()["token"], str), "token data do not contain string"
 
 def test_Auth_incorrect_cred():
+    ##GIVEN - webservice url, data with incorrect creditials, correct header
     url="https://restful-booker.herokuapp.com/auth"
     data={
     "username" : "baduser",
     "password" : "badpass"
     }
     head='Content-Type: application/json'
+    ##WHEN - correct request is posted
     resp=requests.post(url, data, head)
+    ##THEN - response code must be correct 401 for not authorized - THIS TEST FAILS
     assert resp.status_code==401, "Incorrect response code. This one should be corrected 401 for bad authorization"
+    ##THEN - respone must contain reason why access is denied in correct format
     assert list(resp.json().keys())[0]=="reason", "Data key does not exists"
     assert isinstance(resp.json()["reason"], str), "Reason is not a string"
 
