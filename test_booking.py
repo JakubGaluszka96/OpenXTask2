@@ -97,7 +97,16 @@ def test_GetBooking():
     resp = requests.get(url)
     ##THEN - Response code should be 404 Not found
     assert resp.status_code==404, "Wrong response for unexisting ID"
-    
+
+url="https://restful-booker.herokuapp.com/auth"
+data={
+"username" : "admin",
+"password" : "password123"
+}
+head='Content-Type: application/json'
+resp=requests.post(url, data, head)
+cookie=resp.json()
+
 url='https://restful-booker.herokuapp.com/booking'
 head = {
     'Content-Type': 'application/json',
@@ -116,8 +125,9 @@ data = {
 }
 resp = requests.post(url, headers=head, json=data)
 id=resp.json()['bookingid']
+newbook=resp.json()
+print(newbook)
 url=url+"/"+str(id)
-##WHEN - GET Booking using existing ID    
-resp = requests.get(url)
-print(resp.json()==data)
+resp = requests.delete(url, cookies=cookie, headers=head)
+print(resp)
 
