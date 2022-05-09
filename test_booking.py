@@ -16,6 +16,18 @@ def find_maxID(dict):
             max=newmax
     return max
 
+def test_Auth():
+    url="https://restful-booker.herokuapp.com/auth"
+    data={
+    "username" : "admin",
+    "password" : "password123"
+    }
+    head='Content-Type: application/json'
+    resp=requests.post(url, data, head)
+    assert resp.status_code==200
+    assert list(resp.json().keys())[0]=="token"
+    assert isinstance(resp.json()["token"], str)
+
 def test_GetBookingIds():
     ##GIVEN - webservice url in order to GET
     url="https://restful-booker.herokuapp.com/booking"
@@ -84,7 +96,13 @@ def test_GetBooking():
     respo = requests.get(urlid)
     assert respo.status_code==404, "Wrong response for unexisting ID"
 
+url="https://restful-booker.herokuapp.com/auth"
+data={
+    "username" : "admin",
+    "password" : "password123"
+}
+head='Content-Type: application/json'
 
-
-
+resp=requests.post(url, data, head)
+print(resp.json()["token"])
 
