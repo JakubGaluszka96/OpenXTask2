@@ -53,48 +53,43 @@ def test_GetBookingIds():
         assert isinstance((json_resp[i]['bookingid']), int) , "At least one of booking Id's is not an intiger"
 
 def test_GetBooking():
-    ##GIVEN - webservice url in order to GET Booking IDs
-    url="https://restful-booker.herokuapp.com/booking"
+    ##GIVEN - webservice url in order to POST - Create new booking and obtain its ID
+    url='https://restful-booker.herokuapp.com/booking'
+    head = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    }
+    data = {
+        'firstname': 'James',
+        'lastname': 'Brown',
+        'totalprice': 111,
+        'depositpaid': True,
+        'bookingdates': {
+            'checkin': '2018-01-01',
+            'checkout': '2019-01-01',
+        },
+        'additionalneeds': 'Breakfast',
+    }
+    resp = requests.post(url, headers=head, json=data)
+    id=resp.json()['bookingid']
+    url=url+"/"+str(id)
+    ##WHEN - GET Booking using existing ID    
     resp = requests.get(url)
-    json_resp = resp.json()
-    ##GIVEN - webservice url and random ID
-    pos=random.randrange(0,len(json_resp))
-    id=json_resp[pos]['bookingid']
-    urlid=url+"/"+str(id)
-    ##WHEN - GET Booking using existing ID
-    respo = requests.get(urlid)
-    json_respo = respo.json()
-    ##THEN - Response has correct code
-    assert respo.status_code==200, "Wrong response code."
-    ##THEN - Response all booking details with expected names
-    assert list(json_respo.keys())[0]=="firstname", "Data key 'firstname' does not exists"
-    assert list(json_respo.keys())[1]=="lastname", "Data key 'lastname' does not exists"
-    assert list(json_respo.keys())[2]=="totalprice", "Data key 'totalprice' does not exists"
-    assert list(json_respo.keys())[3]=="depositpaid", "Data key 'depositpaid' does not exists"
-    assert list(json_respo.keys())[4]=="bookingdates", "Data key 'bookingdates' does not exists"
-    assert list(json_respo['bookingdates'].keys())[0]=="checkin", "Data key 'checkin' does not exists"
-    assert list(json_respo['bookingdates'].keys())[1]=="checkout", "Data key 'checkout' does not exists"
-    assert list(json_respo.keys())[5]=="additionalneeds", "Data key 'additionalneeds' does not exists"
-    ##THEN - Response all booking details with expected types
-    assert isinstance((json_respo['firstname']), str) , "'firstname' is not a string - unexpected type"
-    assert isinstance((json_respo['lastname']), str) , "'lastname' is not a string - unexpected type"
-    assert isinstance((json_respo['totalprice']), (int, float)) , "'totalprice' is not a intiger nor float - unexpected type"
-    assert isinstance((json_respo['depositpaid']), bool) , "'depositpaid' is not a bool - unexpected type"
-    assert isinstance((json_respo['bookingdates']), dict) , "'bookingdates' is not a dictionary - unexpected type"
-    checkin=json_respo['bookingdates']['checkin']
-    validate(checkin)
-    assert isinstance(datetime.datetime.strptime(checkin, '%Y-%m-%d'), datetime.date) , "'checkin' is not a date- unexpected type"
-    checkout=json_respo['bookingdates']['checkout']
-    validate(checkout)
-    assert isinstance(datetime.datetime.strptime(checkout, '%Y-%m-%d'), datetime.date) , "'checkin' is not a date- unexpected type"
-    assert isinstance((json_respo['additionalneeds']), str) , "'additionalneeds' is not a string - unexpected type"
-    ##WHEN - GET Booking using unexisting ID
-    maxID=find_maxID(json_resp)
+    ##THEN - Response must have correct code
+    assert resp.status_code==200, "Wrong response code."
+    ##THEN - Input data when created must be equal to response data
+    assert resp.json()==data
+    ##GIVEN - webservice url leading to unexisting booking
+    url='https://restful-booker.herokuapp.com/booking'
+    resp = requests.get(url)
+    maxID=find_maxID(resp.json())
     id=maxID+1
-    urlid=url+"/"+str(id)
-    respo = requests.get(urlid)
-    assert respo.status_code==404, "Wrong response for unexisting ID"
-
+    ##WHEN - GET Booking using unexisting ID
+    url=url+"/"+str(id)
+    resp = requests.get(url)
+    ##THEN - Response code should be 404 Not found
+    assert resp.status_code==404, "Wrong response for unexisting ID"
+    
 url='https://restful-booker.herokuapp.com/booking'
 head = {
     'Content-Type': 'application/json',
@@ -112,5 +107,9 @@ data = {
     'additionalneeds': 'Breakfast',
 }
 resp = requests.post(url, headers=head, json=data)
-print(resp)
+id=resp.json()['bookingid']
+url=url+"/"+str(id)
+##WHEN - GET Booking using existing ID    
+resp = requests.get(url)
+print(resp.json()==data)
 
