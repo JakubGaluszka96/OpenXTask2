@@ -16,7 +16,7 @@ def find_maxID(dict):
             max=newmax
     return max
 
-def test_Auth():
+def test_Auth_correct_cred():
     url="https://restful-booker.herokuapp.com/auth"
     data={
     "username" : "admin",
@@ -24,9 +24,21 @@ def test_Auth():
     }
     head='Content-Type: application/json'
     resp=requests.post(url, data, head)
-    assert resp.status_code==200
+    assert resp.status_code==200, "Incorrect response code."
     assert list(resp.json().keys())[0]=="token"
     assert isinstance(resp.json()["token"], str)
+
+def test_Auth_incorrect_cred():
+    url="https://restful-booker.herokuapp.com/auth"
+    data={
+    "username" : "baduser",
+    "password" : "badpass"
+    }
+    head='Content-Type: application/json'
+    resp=requests.post(url, data, head)
+    assert resp.status_code==401, "Incorrect response code. This one should be corrected 401 for bad authorization"
+    assert list(resp.json().keys())[0]=="reason", "Data key does not exists"
+    assert isinstance(resp.json()["reason"], str), "Reason is not a string"
 
 def test_GetBookingIds():
     ##GIVEN - webservice url in order to GET
@@ -45,19 +57,6 @@ def test_GetBooking():
     url="https://restful-booker.herokuapp.com/booking"
     resp = requests.get(url)
     json_resp = resp.json()
-    """ ##VERY LONG TEST CHECKING EACH ID
-    ##WHEN - using any of existing IDs
-    for i in range(0, len(json_resp)):
-        ##GIVEN - existing booking ID at the end of webservice url
-        id=json_resp[i]['bookingid']
-        urlid=url+"/"+str(id)
-        ##WHEN - GET Booking
-        respo = requests.get(urlid)
-        json_respo = respo.json()
-        ##THEN - Response has correct code
-        assert respo.status_code==200, "Wrong response code."
-        ##THEN - Response all booking details in correct format
-    """
     ##GIVEN - webservice url and random ID
     pos=random.randrange(0,len(json_resp))
     id=json_resp[pos]['bookingid']
@@ -96,13 +95,22 @@ def test_GetBooking():
     respo = requests.get(urlid)
     assert respo.status_code==404, "Wrong response for unexisting ID"
 
-url="https://restful-booker.herokuapp.com/auth"
-data={
-    "username" : "admin",
-    "password" : "password123"
+url='https://restful-booker.herokuapp.com/booking'
+head = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
 }
-head='Content-Type: application/json'
-
-resp=requests.post(url, data, head)
-print(resp.json()["token"])
+data = {
+    'firstname': 'James',
+    'lastname': 'Brown',
+    'totalprice': 111,
+    'depositpaid': True,
+    'bookingdates': {
+        'checkin': '2018-01-01',
+        'checkout': '2019-01-01',
+    },
+    'additionalneeds': 'Breakfast',
+}
+resp = requests.post(url, headers=head, json=data)
+print(resp)
 
