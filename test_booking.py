@@ -98,36 +98,68 @@ def test_GetBooking():
     ##THEN - Response code should be 404 Not found
     assert resp.status_code==404, "Wrong response for unexisting ID"
 
-url="https://restful-booker.herokuapp.com/auth"
-data={
-"username" : "admin",
-"password" : "password123"
-}
-head='Content-Type: application/json'
-resp=requests.post(url, data, head)
-cookie=resp.json()
+def test_Delete_ok():
 
-url='https://restful-booker.herokuapp.com/booking'
-head = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-}
-data = {
-    'firstname': 'James',
-    'lastname': 'Brown',
-    'totalprice': 111,
-    'depositpaid': True,
-    'bookingdates': {
-        'checkin': '2018-01-01',
-        'checkout': '2019-01-01',
-    },
-    'additionalneeds': 'Breakfast',
-}
-resp = requests.post(url, headers=head, json=data)
-id=resp.json()['bookingid']
-newbook=resp.json()
-print(newbook)
-url=url+"/"+str(id)
-resp = requests.delete(url, cookies=cookie, headers=head)
-print(resp)
+    url="https://restful-booker.herokuapp.com/auth"
+    data={
+    "username" : "admin",
+    "password" : "password123"
+    }
+    head='Content-Type: application/json'
+    resp=requests.post(url, data, head)
+    cookie=resp.json()
+
+    url='https://restful-booker.herokuapp.com/booking'
+    head = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    data = {
+        'firstname': 'James',
+        'lastname': 'Brown',
+        'totalprice': 111,
+        'depositpaid': True,
+        'bookingdates': {
+            'checkin': '2018-01-01',
+            'checkout': '2019-01-01',
+        },
+        'additionalneeds': 'Breakfast',
+    }
+    resp = requests.post(url, headers=head, json=data)
+    id=resp.json()['bookingid']
+    url=url+"/"+str(id)
+    resp = requests.get(url)
+    assert resp.status_code == 200, "Booking was not successufly created (for delete purpose)."
+    resp = requests.delete(url, cookies=cookie, headers=head)
+    assert resp.status_code == 201, "Incorrect response code"
+    resp = requests.get(url)
+    assert resp.status_code == 404, "Booking was not successfuly deleted"
+
+def test_Delete_no_auth():
+
+    url='https://restful-booker.herokuapp.com/booking'
+    head = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    data = {
+        'firstname': 'James',
+        'lastname': 'Brown',
+        'totalprice': 111,
+        'depositpaid': True,
+        'bookingdates': {
+            'checkin': '2018-01-01',
+            'checkout': '2019-01-01',
+        },
+        'additionalneeds': 'Breakfast',
+    }
+    resp = requests.post(url, headers=head, json=data)
+    id=resp.json()['bookingid']
+    url=url+"/"+str(id)
+    resp = requests.get(url)
+    assert resp.status_code == 200, "Booking was not successufly created (for delete purpose)."
+    resp = requests.delete(url, headers=head)
+    assert resp.status_code == 403, "Incorrect response code"
+    resp = requests.get(url)
+    assert resp.status_code == 200, "Booking was deteted without authorization"
 
