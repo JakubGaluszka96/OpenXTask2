@@ -1,20 +1,15 @@
 import requests
-import random
-import datetime
 
-def validate(date_text):
-    try:
-        datetime.datetime.strptime(date_text, '%Y-%m-%d')
-    except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-
-def find_maxID(dict):
-    max=dict[0]['bookingid']
-    for i in range(1,len(dict)):
-        newmax=dict[i]['bookingid']
-        if newmax>max:
-            max=newmax
-    return max
+def Auth():
+    url="https://restful-booker.herokuapp.com/auth"
+    data={
+    "username" : "admin",
+    "password" : "password123"
+    }
+    head='Content-Type: application/json'
+    resp=requests.post(url, data, head)
+    cookie=resp.json()
+    return cookie
 
 def test_Auth_correct_cred():
     ##GIVEN - webservice url, data with correct creditials, correct header
@@ -81,19 +76,18 @@ def test_GetBooking():
     resp = requests.post(url, headers=head, json=data)
     id=resp.json()['bookingid']
     url=url+"/"+str(id)
+    ##authorization token in order to delete
+    cookie = Auth()
     ##WHEN - GET Booking using existing ID    
     resp = requests.get(url)
     ##THEN - Response must have correct code
     assert resp.status_code==200, "Wrong response code."
     ##THEN - Input data when created must be equal to response data
     assert resp.json()==data
-    ##GIVEN - webservice url leading to unexisting booking
-    url='https://restful-booker.herokuapp.com/booking'
-    resp = requests.get(url)
-    maxID=find_maxID(resp.json())
-    id=maxID+1
+    ##GIVEN - webservice url leading to unexisting booking (just deleted)
+    resp = requests.delete(url, cookies=cookie, headers=head)
+    assert resp.status_code == 201, "Created sample booking was not deleted"
     ##WHEN - GET Booking using unexisting ID
-    url=url+"/"+str(id)
     resp = requests.get(url)
     ##THEN - Response code should be 404 Not found
     assert resp.status_code==404, "Wrong response for unexisting ID"
