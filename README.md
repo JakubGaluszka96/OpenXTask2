@@ -29,9 +29,13 @@ and activate:
 
 > source venv/bin/activate
 
-Install requirements on virtual enviroment:
+Install Pytest:
 
-> pip install -r requirements.txt
+> pip install pytest
+
+and requests:
+
+> pip install requests
 
 Run test:
 
